@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sınav Sonuç Ayrıştırıcı</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+
+<body>
+    <div class="main-wrapper">
+        <!-- Card 1: Header -->
+        <div class="card header-card">
+            <img src="logo.png" alt="ZA Logo" class="logo">
+            <h1>Sınav Sonuç Ayrıştırıcı</h1>
+            <p>Sonuç dosyalarını yükleyin ve analiz edin.</p>
+        </div>
+
+        <!-- Card 2: Stepper -->
+        <div class="card stepper-card">
+            <div class="stepper-item active" id="step-indicator-1">
+                <div class="step-icon">
+                    <i class="ph ph-upload-simple"></i>
+                </div>
+                <span>Dosya Yükle</span>
+            </div>
+
+            <div class="step-divider"></div>
+
+            <div class="stepper-item" id="step-indicator-2">
+                <div class="step-icon">
+                    <i class="ph ph-list-dashes"></i>
+                </div>
+                <span>Sonuçları Gör</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Content -->
+        <div class="card content-card">
+
+            <!-- STEP 1: Upload -->
+            <div id="step-1" class="step-content">
+                <div class="step-header">
+                    <div class="step-badge">1. Adım</div>
+                    <h2>Dosya Yükleme</h2>
+                    <p>İşlem yapmak istediğiniz sınav sonuç dosyasını (.txt veya .dat) aşağıya yükleyin.</p>
+                </div>
+
+                <div class="upload-area" id="drop-zone">
+                    <input type="file" id="file-input" accept=".txt,.dat" hidden>
+                    <div class="upload-icon">
+                        <i class="ph ph-cloud-arrow-up"></i>
+                    </div>
+                    <h3>Dosyayı Buraya Sürükleyin</h3>
+                    <p>veya bilgisayarınızdan seçmek için tıklayın</p>
+                    <div class="supported-formats">Desteklenen: .txt, .dat</div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Results -->
+            <div id="step-2" class="step-content" style="display: none;">
+                <div class="step-header">
+                    <div class="step-badge">2. Adım</div>
+                    <h2>Ayrıştırılan Veriler</h2>
+                    <p>Dosya içeriğinde bir alana tıklayarak parametre başlangıçlarını belirleyin.</p>
+                </div>
+
+                <div class="step-2-layout">
+                    <!-- Left: Parameters Panel -->
+                    <div class="parameters-panel">
+                        <div class="panel-header">
+                            <div class="header-drag-spacer"></div>
+                            <div class="header-col-name">Parametre</div>
+                            <div class="header-col-index">Başlangıç</div>
+                            <div class="header-delete-spacer"></div>
+                            <button id="clear-params-btn" class="btn-clear" title="Tümünü Temizle">
+                                <i class="ph ph-trash"></i>
+                            </button>
+                        </div>
+                        <div id="parameters-list" class="parameters-list">
+                            <!-- Selected parameters will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- Right: File Content -->
+                    <div class="file-content-panel">
+                        <div class="file-summary-card">
+                            <div class="file-icon">
+                                <i class="ph ph-file-text"></i>
+                            </div>
+                            <div class="file-info-group">
+                                <span class="label">YÜKLENEN DOSYA</span>
+                                <span id="selected-filename" class="filename">dosya_adi.txt</span>
+                            </div>
+                            <button id="change-file-btn" class="btn-text">
+                                <i class="ph ph-arrows-clock-wise"></i> Değiştir
+                            </button>
+                        </div>
+
+                        <div class="output-wrapper">
+                            <div class="output-header">
+                                <span>Dosya İçeriği (Tıklayarak parametre seçin)</span>
+                                <span class="line-count" id="line-count">0 Satır</span>
+                            </div>
+                            <div id="output-content" class="output-content">Henüz veri yok.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+    <!-- Context Menu for Parameter Selection -->
+    <div id="context-menu" class="context-menu" style="display: none;">
+        <div class="menu-item" data-value="name">Adı ve Soyadı</div>
+        <div class="menu-item" data-value="phone">Telefon Numarası</div>
+        <div class="menu-item" data-value="tc">TC Numarası</div>
+        <div class="menu-item" data-value="booklet">Kitapçık Türü</div>
+        <div class="menu-item" data-value="branch">Şube</div>
+        <div class="menu-item" data-value="class">Sınıf</div>
+        <div class="menu-item" data-value="student_no">Öğrenci Numarası</div>
+        <div class="menu-item" data-value="col1">Sütün 1</div>
+        <div class="menu-item" data-value="col2">Sütün 2</div>
+        <div class="menu-item" data-value="col3">Sütün 3</div>
+        <div class="menu-item" data-value="col4">Sütün 4</div>
+        <div class="menu-item" data-value="col5">Sütün 5</div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

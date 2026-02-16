@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otomatik Ders Programı - Sonuç</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        .view-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #f0f0f0;
+            padding-bottom: 0;
+        }
+
+        .view-tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+            transition: all 0.3s;
+        }
+
+        .view-tab:hover {
+            color: var(--primary-purple);
+        }
+
+        .view-tab.active {
+            color: var(--primary-purple);
+            border-bottom-color: var(--primary-purple);
+        }
+
+        .view-content {
+            display: none;
+        }
+
+        .view-content.active {
+            display: block;
+        }
+
+        .schedule-grid {
+            background: white;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .schedule-table th {
+            background: var(--bg-gradient);
+            color: white;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .schedule-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            vertical-align: middle;
+            min-height: 60px;
+        }
+
+        .schedule-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .lesson-cell {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1565c0;
+            margin: 2px;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .lesson-cell .class-name {
+            font-weight: 800;
+            display: block;
+        }
+
+        .lesson-cell .teacher-name {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .empty-cell {
+            color: #ccc;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        .day-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .day-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .day-btn:hover {
+            border-color: var(--primary-purple);
+            color: var(--primary-purple);
+        }
+
+        .day-btn.active {
+            background: var(--bg-gradient);
+            color: white;
+            border-color: var(--primary-purple);
+        }
+
+        .teacher-selector {
+            margin-bottom: 20px;
+        }
+
+        .teacher-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .teacher-selector select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(9, 132, 227, 0.1);
+        }
+
+        .selector-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .selector-container label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .teacher-select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .teacher-select:hover {
+            border-color: var(--primary-purple);
+            box-shadow: 0 4px 12px rgba(103, 58, 183, 0.2);
+        }
+
+        .teacher-select:focus {
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 4px rgba(103, 58, 183, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .time-column {
+            background: #f8f9fa;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ef6c00;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #1565c0;
+            font-weight: 600;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #ef6c00;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-wrapper">
+        <!-- Modern Header -->
+        <header class="modern-header">
+            <div class="logo-section">
+                <img src="C:/Users/BS/.gemini/antigravity/brain/70137e88-df51-4e31-97d8-731b233d7d22/uploaded_media_1769600595669.png"
+                    alt="Logo" class="app-logo-modern">
+            </div>
+            <h1 class="app-title-modern">Otomatik Ders Programı Hazırlama Uygulaması</h1>
+        </header>
+
+        <!-- Stepper -->
+        <div class="stepper-container">
+            <div class="stepper">
+                <div class="step completed" onclick="window.location.href='index.html'">
+                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                    <div class="step-label">Zaman Planı</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step completed" onclick="window.location.href='teachers.html'">
+                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                    <div class="step-label">Öğretmenler</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step completed" onclick="window.location.href='filters.html'">
+                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                    <div class="step-label">Kısıtlamalar</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step active" data-step="4">
+                    <div class="step-circle"><i class="fas fa-calendar-check"></i></div>
+                    <div class="step-label">Ders Programı</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="modern-container">
+            <div class="page-header">
+                <h2><i class="fas fa-calendar-check"></i> 4. Adım: Ders Programı</h2>
+                <p>Otomatik olarak oluşturulan ders programını görüntüleyin ve dışa aktarın</p>
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-card" id="statsCard">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTeachers">0</div>
+                    <div class="stat-label">Öğretmen</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalClasses">0</div>
+                    <div class="stat-label">Sınıf</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalLessons">0</div>
+                    <div class="stat-label">Ders Saati</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="assignedLessons">0</div>
+                    <div class="stat-label">Atanan Ders</div>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alertContainer"></div>
+
+            <!-- Export Toolbar -->
+            <div class="day-toolbar" style="margin-bottom: 20px;">
+                <div class="day-title">
+                    <i class="fas fa-download"></i>
+                    <span>Dışa Aktar</span>
+                </div>
+                <div class="toolbar-actions">
+                    <button id="exportExcelBtn" class="action-btn green"><i class="fas fa-file-excel"></i>
+                        Excel'e Aktar</button>
+                    <button id="exportPdfBtn" class="action-btn orange"><i class="fas fa-file-pdf"></i>
+                        PDF'e Aktar</button>
+                </div>
+            </div>
+
+            <!-- View Tabs -->
+            <div class="view-tabs">
+                <button class="view-tab active" data-view="day">
+                    <i class="fas fa-calendar-day"></i> Gün Bazlı Program
+                </button>
+                <button class="view-tab" data-view="weekly">
+                    <i class="fas fa-table"></i> Hafta Bazlı Program
+                </button>
+                <button class="view-tab" data-view="teacher">
+                    <i class="fas fa-user"></i> Öğretmen Bazlı Program
+                </button>
+                <button class="view-tab" data-view="class">
+                    <i class="fas fa-users"></i> Sınıf Bazlı Program
+                </button>
+            </div>
+
+            <!-- Day-based View -->
+            <div id="dayView" class="view-content active">
+                <div class="day-selector" id="daySelector">
+                    <!-- Day buttons will be loaded here -->
+                </div>
+
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="time-column">Saat</th>
+                            <th>Dersler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dayScheduleBody">
+                        <!-- Schedule rows will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Teacher-based View -->
+            <div id="teacherView" class="view-content">
+                <div class="selector-container">
+                    <label for="teacherSelect">Öğretmen Seçin:</label>
+                    <select id="teacherSelect" class="teacher-select">
+                        <option value="">Öğretmen Seçin</option>
+                    </select>
+                </div>
+
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="time-column">Saat</th>
+                            <th>Pazartesi</th>
+                            <th>Salı</th>
+                            <th>Çarşamba</th>
+                            <th>Perşembe</th>
+                            <th>Cuma</th>
+                            <th>Cumartesi</th>
+                            <th>Pazar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherScheduleBody">
+                        <!-- Teacher schedule rows will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Class-based View -->
+            <div id="classView" class="view-content">
+                <div class="selector-container">
+                    <label for="classSelect">Sınıf Seçin:</label>
+                    <select id="classSelect" class="teacher-select">
+                        <option value="">Sınıf Seçin</option>
+                    </select>
+                </div>
+
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th class="time-column">Saat</th>
+                            <th>Pazartesi</th>
+                            <th>Salı</th>
+                            <th>Çarşamba</th>
+                            <th>Perşembe</th>
+                            <th>Cuma</th>
+                            <th>Cumartesi</th>
+                            <th>Pazar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classScheduleBody">
+                        <!-- Class schedule rows will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Weekly (Master) View -->
+            <div id="weeklyView" class="view-content">
+                <div style="overflow-x: auto; margin-bottom: 20px;">
+                    <table class="schedule-table" style="min-width: 1500px; font-size: 0.8rem;">
+                        <thead id="weeklyScheduleHead">
+                            <!-- Headers will be generated dynamically -->
+                        </thead>
+                        <tbody id="weeklyScheduleBody">
+                            <!-- Schedule rows will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Navigation Buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
+                <button class="modern-next-btn" onclick="window.location.href='filters.html'"
+                    style="background: linear-gradient(135deg, #95a5a6, #7f8c8d);">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Önceki Adım</span>
+                </button>
+                <button class="modern-next-btn" onclick="window.location.href='index.html'"
+                    style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                    <i class="fas fa-redo"></i>
+                    <span>Yeni Program Oluştur</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="schedule.js"></script>
+</body>
+
+</html>

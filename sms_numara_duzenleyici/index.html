@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Numara Düzenleyici</title>
+    <meta name="description" content="Excel'den kopyalanan telefon numaralarını SMS formatına dönüştürün">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="panel-content">
+                <div class="logo-container">
+                    <img src="logo.png" alt="Logo" class="logo">
+                </div>
+                <h1 class="title">SMS Numara Düzenleyici</h1>
+                <p class="subtitle">Excel'den kopyaladığınız sütunu buraya yapıştırın:</p>
+
+                <div class="input-container">
+                    <textarea id="inputNumbers" placeholder="Telefon numaralarını buraya yapıştırın...
+Örnek:
+0(532) 302-3020
+0532 201-1025
+5011231210"></textarea>
+                </div>
+
+                <button class="generate-btn" id="generateBtn">
+                    <span class="btn-icon">📱</span>
+                    SMS VERİSİ OLUŞTUR
+                </button>
+
+                <p class="footer-text">Geri bildirim için: edesisteknikdestek@gmail.com</p>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <div class="header-row">
+                <h2 class="list-title">SMS Numara Listesi</h2>
+                <div class="action-buttons">
+                    <button class="action-btn copy-btn" id="copyBtn">
+                        <span class="btn-icon">📋</span>
+                        Kopyala
+                    </button>
+                    <button class="action-btn download-btn" id="downloadBtn">
+                        <span class="btn-icon">💾</span>
+                        TXT İndir
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-original">Telefon Numarası</th>
+                            <th class="col-formatted">Formatlanmış</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Results will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="total-count" id="totalCount">
+                Toplam: 0 numara
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

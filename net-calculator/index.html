@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Net Hesaplama</title>
+    <meta name="description" content="Excel dosyası ile kolay net hesaplama aracı">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9b4dca">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- Phosphor Icons (Local) -->
+    <link rel="stylesheet" href="libs/phosphor-icons.css">
+
+    <!-- SheetJS for Excel processing (With Style Support) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker kayıtlı:', reg.scope))
+                    .catch(err => console.log('Service Worker hatası:', err));
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" class="logo">
+        </div>
+        <h1>Net Hesaplama</h1>
+        <p class="subtitle">Excel dosyası ile kolay net hesaplama</p>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Left Panel: File Upload & Paste -->
+        <div class="left-panel">
+            <!-- File Upload Card -->
+            <div class="card">
+                <h2><i class="ph ph-file-xls"></i> Excel Dosyası Yükle</h2>
+                <div class="drop-zone" id="dropZone">
+                    <i class="ph ph-upload-simple"></i>
+                    <p>Dosyayı buraya sürükleyip bırakın</p>
+                    <p>veya tıklayarak seçin</p>
+                    <span class="file-types">.xlsx, .xls, .csv</span>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+                </div>
+                <div class="file-info" id="fileInfo">
+                    <i class="ph ph-check-circle"></i>
+                    <span id="fileName">Dosya yüklendi</span>
+                </div>
+            </div>
+
+            <!-- Answer File Upload Card -->
+            <div class="card">
+                <h2><i class="ph ph-file-text"></i> Dosya Görüntüle & Cevap Seç</h2>
+
+                <!-- File Drop Zone for Preview -->
+                <div class="answer-drop-zone" id="answerDropZone">
+                    <i class="ph ph-file-arrow-up"></i>
+                    <p>Dosyayı sürükleyin veya tıklayarak seçin</p>
+                    <span class="file-types">.xlsx, .xls, .csv, .txt</span>
+                    <input type="file" id="answerFileInput" accept=".xlsx,.xls,.csv,.txt">
+                </div>
+
+                <!-- Loaded File Info -->
+                <div class="answer-file-info" id="answerFileInfo">
+                    <i class="ph ph-check-circle"></i>
+                    <span id="answerFileName">Dosya yüklendi</span>
+                    <button class="answer-clear-btn" id="answerClearBtn" title="Temizle">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selection Copy Tooltip (global, appended to body via JS) -->
+        </div>
+
+        <!-- Right Panel: Data Display -->
+        <div class="right-panel">
+            <div class="card data-panel">
+                <h2><i class="ph ph-table"></i> Veri Tablosu</h2>
+
+                <!-- Calculation Controls -->
+                <div class="calculation-controls">
+                    <div class="control-group">
+                        <label>Yanlış Götürme Kuralı:</label>
+                        <select id="wrongRule">
+                            <option value="4">4 Yanlış 1 Doğruyu (YKS/TYT)</option>
+                            <option value="3">3 Yanlış 1 Doğruyu (LGS)</option>
+                            <option value="0">Götürme Yok</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-accent" id="calculateBtn">
+                        <i class="ph ph-calculator"></i>
+                        Net Hesapla
+                    </button>
+                </div>
+
+                <div class="btn-group" style="margin-bottom: 1rem;">
+                    <button class="btn btn-secondary" id="clearDataBtn">
+                        <i class="ph ph-trash"></i>
+                        Tabloyu Temizle
+                    </button>
+                    <button class="btn btn-secondary" id="exportBtn">
+                        <i class="ph ph-download"></i>
+                        Excel İndir
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="dataTable">
+                        <thead id="tableHead">
+                            <!-- Headers will be generated dynamically -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be generated dynamically -->
+                        </tbody>
+                    </table>
+                    <div class="empty-message" id="emptyMessage">
+                        <i class="ph ph-files"></i>
+                        <p>Henüz veri yok</p>
+                        <p>Excel dosyası yükleyin veya satır yapıştırın</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Content Preview (resizable) -->
+            <div class="card file-preview-card">
+                <div class="file-preview-container" id="filePreviewContainer">
+                    <!-- Zoom Controls -->
+                    <div class="zoom-controls" id="zoomControls">
+                        <button class="zoom-btn" id="zoomOutBtn" title="Küçült">
+                            <i class="ph ph-minus"></i>
+                        </button>
+                        <span class="zoom-level" id="zoomLevel">100%</span>
+                        <button class="zoom-btn" id="zoomInBtn" title="Büyüt">
+                            <i class="ph ph-plus"></i>
+                        </button>
+                        <button class="zoom-btn" id="zoomResetBtn" title="Sıfırla">
+                            <i class="ph ph-arrows-counter-clockwise"></i>
+                        </button>
+                    </div>
+                    <div class="file-preview-content" id="filePreviewContent">
+                        <!-- Content will be rendered here -->
+                    </div>
+                    <div class="file-preview-empty" id="filePreviewEmpty">
+                        <i class="ph ph-file-magnifying-glass"></i>
+                        <p>Dosya yükleyerek içeriğini görüntüleyin</p>
+                    </div>
+                    <!-- Resize handle -->
+                    <div class="resize-handle" id="resizeHandle" title="Boyutlandırmak için sürükleyin">
+                        <i class="ph ph-arrows-out-simple"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="ph ph-info"></i>
+        <span id="notificationText">Bildirim</span>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="ph ph-chart-bar"></i> Hesaplama Sonuçları</h3>
+                <button class="close-modal" id="closeModalBtn"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="resultSummary">
+                    <!-- Results will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeModalFooterBtn">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+
+</html>

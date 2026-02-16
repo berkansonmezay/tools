@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otomatik Ders Programı Hazırlama</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="app-wrapper">
+        <!-- Modern Header with Logo -->
+        <header class="modern-header">
+            <div class="logo-section">
+                <img src="C:/Users/BS/.gemini/antigravity/brain/70137e88-df51-4e31-97d8-731b233d7d22/uploaded_media_1769600595669.png"
+                    alt="Logo" class="app-logo-modern">
+            </div>
+            <h1 class="app-title-modern">Otomatik Ders Programı Hazırlama Uygulaması</h1>
+        </header>
+
+        <!-- Step Indicator -->
+        <div class="stepper-container">
+            <div class="stepper">
+                <div class="step active" data-step="1">
+                    <div class="step-circle">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="step-label">Zaman Planı</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="2" onclick="window.location.href='teachers.html'">
+                    <div class="step-circle">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="step-label">Öğretmenler</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3" onclick="window.location.href='filters.html'">
+                    <div class="step-circle">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <div class="step-label">Kısıtlamalar</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="modern-container">
+            <!-- Page Title -->
+            <div class="page-header">
+                <h2><i class="fas fa-clock"></i> 1. Adım: Zaman Planı</h2>
+                <p>Ders saatlerini ve teneffüs sürelerini belirleyin</p>
+            </div>
+
+            <!-- Quick Settings -->
+            <section class="settings-card">
+                <div class="card-header">
+                    <i class="fas fa-cog"></i>
+                    <h3>Hızlı Ayarlar</h3>
+                </div>
+                <div class="settings-grid">
+                    <div class="form-group">
+                        <label for="lessonDuration">Ders Süresi (dk):</label>
+                        <input type="number" id="lessonDuration" value="40" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="breakDuration">Teneffüs (dk):</label>
+                        <input type="number" id="breakDuration" value="10" min="0">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tabs -->
+            <nav class="days-nav">
+                <ul class="tabs-list" id="daysTabs">
+                    <li class="tab active" data-day="0">Pazartesi</li>
+                    <li class="tab" data-day="1">Salı</li>
+                    <li class="tab" data-day="2">Çarşamba</li>
+                    <li class="tab" data-day="3">Perşembe</li>
+                    <li class="tab" data-day="4">Cuma</li>
+                    <li class="tab" data-day="5">Cumartesi</li>
+                    <li class="tab" data-day="6">Pazar</li>
+                </ul>
+            </nav>
+
+            <!-- Day Content -->
+            <main class="schedule-container">
+                <div class="day-toolbar">
+                    <div class="day-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="currentDayName">Pazartesi</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button id="addLessonBtn" class="action-btn purple"><i class="fas fa-plus"></i> Ders Saati
+                            Ekle</button>
+                        <button id="calculateHoursBtn" class="action-btn blue-alt"><i class="fas fa-calculator"></i>
+                            Saatleri Hesapla</button>
+                        <button id="exportExcelBtn" class="action-btn green"><i class="fas fa-file-excel"></i>
+                            Excel'e Aktar</button>
+                        <label for="importExcelFile" class="action-btn orange" style="margin: 0; cursor: pointer;">
+                            <i class="fas fa-file-upload"></i> Excel'den Yükle
+                        </label>
+                        <input type="file" id="importExcelFile" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="copy-toolbar">
+                    <div class="copy-label">
+                        <i class="fas fa-copy"></i>
+                        <span>Gün Kopyala:</span>
+                    </div>
+                    <select id="copyFromDay">
+                        <option value="0">Pazartesi</option>
+                        <option value="1">Salı</option>
+                        <option value="2">Çarşamba</option>
+                        <option value="3">Perşembe</option>
+                        <option value="4">Cuma</option>
+                        <option value="5">Cumartesi</option>
+                        <option value="6">Pazar</option>
+                    </select>
+                    <button id="copyDayBtn" class="copy-btn"><i class="fas fa-arrow-right"></i> Kopyala</button>
+                </div>
+
+                <div class="hours-table-wrapper">
+                    <table class="hours-table">
+                        <thead>
+                            <tr>
+                                <th>SIRA</th>
+                                <th>SABİT</th>
+                                <th class="time-header">BAŞLAMA SAATİ</th>
+                                <th class="time-header">BİTİŞ SAATİ</th>
+                                <th>İŞLEM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lessonRowsContainer">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Modern Next Button -->
+                <div class="modern-next-container">
+                    <button class="modern-next-btn" onclick="window.location.href='teachers.html'">
+                        <span>Sonraki Adım</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

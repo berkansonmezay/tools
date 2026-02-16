@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ders Programı Görüntüleyici</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel parsing and export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF AutoTable plugin for tables -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <!-- Roboto font for PDF Turkish character support -->
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/polyfills.umd.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-content">
+                <img src="logo.png" alt="Logo" class="logo-img">
+                <h1 class="app-title">Ders Programı Görüntüleyici</h1>
+                <p class="subtitle">Excel dosyasından ders programı yükleyin ve görüntüleyin</p>
+                <div id="dateRangeDisplay" class="date-range-display" style="display: none;"></div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- File Upload Section -->
+            <section class="upload-section">
+                <div class="section-header">
+                    <h2>📤 Excel Dosyası Yükle</h2>
+                </div>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">📁</div>
+                        <h3>Excel Dosyasını Sürükleyip Bırakın</h3>
+                        <p>veya</p>
+                        <label class="btn-upload" for="fileInput">
+                            Dosya Seç
+                        </label>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
+                        <p class="file-types">Desteklenen formatlar: .xlsx, .xls</p>
+                    </div>
+                </div>
+
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <span class="file-icon">📄</span>
+                    <span class="file-name" id="fileName"></span>
+                    <button class="btn-clear" onclick="clearFile()">✕</button>
+                </div>
+            </section>
+
+            <!-- View Tabs -->
+            <section class="view-section" id="viewSection" style="display: none;">
+                <div class="section-header">
+                    <h2>📋 Ders Programı</h2>
+                    <div class="export-buttons">
+                        <div class="export-dropdown">
+                            <button class="btn-export dropdown-toggle" onclick="toggleExportMenu()">
+                                📥 Dışa Aktar ▼
+                            </button>
+                            <div class="dropdown-menu" id="exportMenu">
+                                <div class="dropdown-section">
+                                    <div class="dropdown-label">📄 Tümünü İndir</div>
+                                    <button onclick="exportAllToPDF()" class="btn-icon-item">
+                                        <svg class="icon-svg icon-pdf" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                                            <path d="M8 9h8v2H8zm0 4h8v2H8z" opacity=".3" />
+                                            <path d="M12 17h4v2h-4z" opacity=".3" />
+                                        </svg>
+                                        Tüm PDF
+                                    </button>
+                                    <button onclick="exportAllToExcel()" class="btn-icon-item">
+                                        <svg class="icon-svg icon-excel" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                                            <path d="M10 9h4v2h-4zm0 4h4v2h-4z" fill="#33c481" />
+                                        </svg>
+                                        Tüm Excel
+                                    </button>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-section">
+                                    <div class="dropdown-label">�‍🏫 Öğretmen Bazlı</div>
+                                    <button onclick="exportTeachersToPDF()" class="btn-icon-item">
+                                        <svg class="icon-svg icon-pdf" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"
+                                                fill="#DC2626" />
+                                        </svg>
+                                        Tüm Öğretmenler PDF
+                                    </button>
+                                    <button onclick="exportTeachersToExcel()" class="btn-icon-item">
+                                        <svg class="icon-svg icon-excel" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M14.8 11l-2 3.3 2 3.5h-2l-1.2-2.3L10.4 18H8.5l2-3.5-1.9-3.4H11l1.1 2.3 1.2-2.4h1.5zM6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8l-6-6H6zm8 7h-1V4l5 5h-4z"
+                                                fill="#166534" />
+                                        </svg>
+                                        Tüm Öğretmenler Excel
+                                    </button>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-section">
+                                    <div class="dropdown-label">🏫 Sınıf Bazlı</div>
+                                    <button onclick="exportClassesToPDF()" class="btn-icon-item">
+                                        <svg class="icon-svg icon-pdf" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"
+                                                fill="#DC2626" />
+                                        </svg>
+                                        Tüm Sınıflar PDF
+                                    </button>
+                                    <button onclick="exportClassesToExcel()" class="btn-icon-item">
+                                        <svg class="icon-svg icon-excel" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M14.8 11l-2 3.3 2 3.5h-2l-1.2-2.3L10.4 18H8.5l2-3.5-1.9-3.4H11l1.1 2.3 1.2-2.4h1.5zM6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8l-6-6H6zm8 7h-1V4l5 5h-4z"
+                                                fill="#166534" />
+                                        </svg>
+                                        Tüm Sınıflar Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-tabs">
+                    <button class="tab-btn active" data-view="teacher" onclick="switchView('teacher')">
+                        👨‍🏫 Öğretmen Bazlı
+                    </button>
+                    <button class="tab-btn" data-view="class" onclick="switchView('class')">
+                        🏫 Sınıf Bazlı
+                    </button>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>📅 Gün Filtresi:</label>
+                        <select id="dayFilter" onchange="applyFilters()">
+                            <option value="all">Tüm Günler</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="teacherFilterGroup">
+                        <label>👨‍🏫 Öğretmen:</label>
+                        <select id="teacherFilter" onchange="applyFilters()">
+                            <option value="all">Tüm Öğretmenler</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="classFilterGroup" style="display: none;">
+                        <label>🏫 Sınıf:</label>
+                        <select id="classFilter" onchange="applyFilters()">
+                            <option value="all">Tüm Sınıflar</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="individualExportGroup">
+                        <button class="btn-individual-export" onclick="exportCurrentToPDF()">
+                            <svg class="icon-svg icon-pdf" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"
+                                    fill="#e11d48" />
+                            </svg>
+                            Seçili PDF
+                        </button>
+                        <button class="btn-individual-export" onclick="exportCurrentToExcel()">
+                            <svg class="icon-svg icon-excel" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" />
+                                <path d="M10 9h4v2h-4zm0 4h4v2h-4z" fill="#059669" />
+                            </svg>
+                            Seçili Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="schedule-container" id="scheduleContainer">
+                    <!-- Schedule tables will be generated here -->
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>© 2026 Ders Programı Görüntüleyici</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

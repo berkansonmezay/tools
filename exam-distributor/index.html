@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/src/logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Otomatik Sınav Salon Dağıtım Uygulaması</title>
+  <link rel="stylesheet" href="./src/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-container">
+    <header>
+      <img src="/src/logo.png" alt="Logo" class="logo" />
+      <h1>Otomatik Sınav Salon Dağıtım Uygulaması</h1>
+      <p>Sınav dağıtım işlemlerinizi kolayca yönetin</p>
+    </header>
+
+    <div class="wizard-steps">
+      <div class="step-indicator active" id="step-indicator-1">
+        <span>1</span> Öğrenci Listesi
+      </div>
+      <div class="step-indicator" id="step-indicator-2">
+        <span>2</span> Sınav Salonları
+      </div>
+      <div class="step-indicator" id="step-indicator-3">
+        <span>3</span> Dağıtım & Sonuç
+      </div>
+    </div>
+
+    <main>
+      <!-- STEP 1: Students -->
+      <section id="step-1" class="step-content card">
+        <h2>1. Adım: Öğrenci Listesi Yükleme</h2>
+        <p class="text-light">Sınava girecek öğrencilerin listesini Excel dosyası olarak yükleyin.</p>
+
+        <div style="margin-bottom: 2rem; display: flex; justify-content: flex-start;">
+          <a href="./sample_students.xlsx" download class="btn btn-outline"
+            style="border-style: dashed; border-color: #10b981; color: #10b981; background: #ecfdf5;">
+            📥 Örnek Excel Şablonu İndir
+          </a>
+        </div>
+
+
+
+        <div class="upload-area" id="student-upload-area">
+          <div class="upload-icon">📂</div>
+          <h3>Dosyayı buraya sürükleyin veya seçin</h3>
+          <p>Desteklenen formatlar: .xlsx, .xls, .csv</p>
+          <input type="file" id="student-file-input" accept=".xlsx, .xls, .csv" hidden />
+          <button class="btn btn-primary" onclick="document.getElementById('student-file-input').click()">Dosya
+            Seç</button>
+        </div>
+
+        <div id="student-preview" class="hidden">
+          <h3>Yüklenen Öğrenciler (<span id="student-count">0</span>)</h3>
+          <div class="data-table-container">
+            <table id="student-table">
+              <thead>
+                <tr>
+                  <th>Öğrenci No</th>
+                  <th>Ad Soyad</th>
+                  <th>Sınıf</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected here -->
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top: 1.5rem; text-align: right;">
+            <button id="btn-to-step-2" class="btn btn-primary">Sonraki Adım: Salonlar ➔</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: Rooms -->
+      <section id="step-2" class="step-content card hidden">
+        <h2>2. Adım: Sınav Salonları</h2>
+        <p class="text-light">Sınav salonlarını ve kontenjanlarını belirleyin.</p>
+
+        <div style="margin-bottom: 2rem; display: flex; justify-content: flex-start;">
+          <a href="./sample_rooms.xlsx" download class="btn btn-outline"
+            style="border-style: dashed; border-color: #6366f1; color: #6366f1; background: #eef2ff;">
+            📥 Örnek Salon Şablonu İndir
+          </a>
+        </div>
+
+        <!-- Stacked Layout -->
+        <div style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 2rem;">
+
+          <!-- Section A: Excel Upload -->
+          <div class="upload-area" id="room-upload-area">
+            <div class="upload-icon">📂</div>
+            <h3>Dosyayı buraya sürükleyin veya seçin</h3>
+            <p>Desteklenen formatlar: .xlsx, .xls, .csv</p>
+            <input type="file" id="room-file-input" accept=".xlsx, .xls, .csv" hidden />
+            <button class="btn btn-primary" onclick="document.getElementById('room-file-input').click()">Dosya
+              Seç</button>
+          </div>
+
+          <!-- Section B: Manual Entry -->
+          <div class="card" style="padding: 2rem; border: 2px dashed #94a3b8; background: #f8fafc; text-align: center;">
+            <h4 style="margin-bottom: 1rem; color: #475569;">Manuel Ekle</h4>
+            <div <div
+              style="display: flex; gap: 1rem; align-items: center; justify-content: center; max-width: 700px; margin: 0 auto;">
+              <div style="flex: 3;">
+                <input type="text" id="manual-room-name" placeholder="Salon Adı (Örnek: A SINIFI, 101..)"
+                  style="width: 100%; padding: 0.8rem; border-radius: 50px; border: 1px solid #cbd5e1; text-align: center;">
+              </div>
+              <div style="flex: 1;">
+                <input type="number" id="manual-room-capacity" placeholder="Kapasite"
+                  style="width: 100%; padding: 0.8rem; border-radius: 50px; border: 1px solid #cbd5e1; text-align: center;">
+              </div>
+              <div style="flex: 1;">
+                <input type="number" id="manual-room-priority" placeholder="Öncelik"
+                  style="width: 100%; padding: 0.8rem; border-radius: 50px; border: 1px solid #cbd5e1; text-align: center;">
+              </div>
+              <button id="btn-add-room" class="btn btn-primary"
+                style="border-radius: 50%; width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">+</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="room-list-container">
+          <h3>Tanımlı Salonlar (<span id="room-count">0</span>) | Toplam Kapasite: <span id="total-capacity">0</span>
+            <button id="btn-export-rooms" class="btn btn-primary"
+              style="font-size: 0.8rem; padding: 0.4rem 1rem; margin-left: 1rem; background: #2563eb;">Excel'e
+              Aktar</button>
+          </h3>
+          <div class="data-table-container">
+            <table id="room-table">
+              <thead>
+                <tr>
+                  <th>Salon Adı</th>
+                  <th>Kapasite</th>
+                  <th>Öncelik Sırası</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: space-between;">
+          <button id="btn-back-to-step-1" class="btn btn-outline">⬅ Önceki Adım</button>
+          <button id="btn-to-step-3" class="btn btn-primary">Dağıtımı Başlat ➔</button>
+        </div>
+      </section>
+
+      <!-- STEP 3: Results -->
+      <section id="step-3" class="step-content card hidden">
+        <h2>3. Adım: Dağıtım Raporu</h2>
+        <p class="text-light">Öğrencilerin salonlara dağıtımı tamamlandı.</p>
+
+        <div class="actions" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+          <button id="btn-export-excel" class="btn btn-primary" style="background: #10b981;">Excel İndir</button>
+          <button id="btn-export-pdf" class="btn btn-primary" style="background: #ef4444;">PDF Raporu Al</button>
+        </div>
+
+        <div id="distribution-summary">
+          <!-- Summary stats injected here -->
+        </div>
+
+        <div id="distribution-results">
+          <!-- Detailed lists per room -->
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; justify-content: space-between;">
+          <button id="btn-back-to-step-2" class="btn btn-outline">⬅ Önceki Adım</button>
+          <button id="btn-restart" class="btn btn-outline">Başa Dön</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
