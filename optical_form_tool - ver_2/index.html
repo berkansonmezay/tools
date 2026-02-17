@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optik Form Parametre Düzenleyici</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Left Panel: Input -->
+        <div class="panel left-panel">
+            <!-- Logo and Title -->
+            <div class="branding">
+                <img src="logo.png" alt="Logo" class="app-logo">
+                <h1 class="app-title">Optik Parametre Düzenleyici</h1>
+                <p class="app-description">Optik okuyucu fmt dosyasını analiz ederek optik başlangıç ve uzunluk
+                    parametrelerini otomatik olarak bulur.</p>
+            </div>
+
+            <!-- File Upload Zone -->
+            <div class="upload-zone" id="dropZone">
+                <div class="upload-icon">📁</div>
+                <p class="upload-text">Dosyayı buraya sürükleyin</p>
+                <p class="upload-or">veya</p>
+                <label class="file-select-btn">
+                    Dosya Seç
+                    <input type="file" id="fileInput" accept=".txt,.fmt,.csv" hidden>
+                </label>
+            </div>
+
+            <p class="or-divider">— veya manuel yapıştırın —</p>
+
+            <textarea id="inputArea" spellcheck="false" placeholder="FMT verilerini buraya yapıştırın..."></textarea>
+            <button id="processBtn">PARAMETRELERİ OLUŞTUR</button>
+        </div>
+
+        <!-- Right Panel: Output -->
+        <div class="panel right-panel">
+            <div class="guide-header">
+                <h2>Optik Ayar Klavuzu:</h2>
+                <div class="export-buttons">
+                    <button id="exportExcel" class="export-btn excel-btn" title="Excel olarak indir">📊 Excel
+                        İndir</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <div class="list-header">
+                    <div class="col-drag"></div>
+                    <div class="col-name">ALAN ADI</div>
+                    <div class="col-start">BAŞLANGIÇ</div>
+                    <div class="col-length">UZUNLUK</div>
+                    <div class="col-delete"></div>
+                </div>
+                <div class="list-body" id="resultBody">
+                    <!-- Rows will be inserted here -->
+                </div>
+            </div>
+            <div class="footer">
+                Geri bildirim için: edesisteknikdestek@gmail.com
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
