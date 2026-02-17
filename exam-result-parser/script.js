@@ -16,6 +16,8 @@ const clearParamsBtn = document.getElementById('clear-params-btn');
 
 let currentFile = null;
 let lastClickedColumn = 1;
+let lastClickedLineText = '';
+let fileContent = '';
 
 // Drag and Drop Events
 dropZone.addEventListener('dragover', (e) => {
@@ -85,6 +87,7 @@ function parseFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const content = e.target.result;
+        fileContent = content;
         displayOutput(content);
     };
     reader.readAsText(file, 'ISO-8859-9'); // Turkish encoding
@@ -99,19 +102,79 @@ function displayOutput(content) {
     // Show full content
     outputContent.textContent = content;
 }
-// Context Menu Logic
-outputContent.addEventListener('click', (e) => {
-    // Detect column index
-    lastClickedColumn = getColumnIndex(e);
 
-    // Show menu at click position
-    contextMenu.style.display = 'block';
-    contextMenu.style.left = `${e.pageX}px`;
-    contextMenu.style.top = `${e.pageY}px`;
+function getTokenLengthAtPosition(colIndex, lineText) {
+    if (!lineText) return '';
+    const line = lineText.replace(/\r$/, ''); // remove trailing \r if present
+    const pos = colIndex - 1; // convert to 0-based
+
+    if (pos < 0 || pos >= line.length) return '';
+
+    // If clicked on a space, find the nearest non-space token to the right
+    let searchPos = pos;
+    if (line[searchPos] === ' ') {
+        while (searchPos < line.length && line[searchPos] === ' ') searchPos++;
+        if (searchPos >= line.length) return '';
+    }
+
+    // Find the start of the contiguous non-space token
+    let start = searchPos;
+    while (start > 0 && line[start - 1] !== ' ') start--;
+
+    // Find the end of the contiguous non-space token
+    let end = searchPos;
+    while (end < line.length - 1 && line[end + 1] !== ' ') end++;
+
+    return end - start + 1;
+}
+let lastTokenLength = '';
+
+// Context Menu Logic - use mouseup to capture drag selections
+outputContent.addEventListener('mouseup', (e) => {
+    // Small delay to let the browser finalize the selection
+    setTimeout(() => {
+        const selection = window.getSelection();
+        const selectedText = selection.toString();
+
+        if (selectedText.length > 0 && outputContent.contains(selection.anchorNode)) {
+            // User dragged to select text - use selection start as başlangıç
+            const range = selection.getRangeAt(0);
+            const startNode = range.startContainer;
+            const startOffset = range.startOffset;
+
+            if (startNode && startNode.nodeType === Node.TEXT_NODE) {
+                const text = startNode.textContent;
+                const textBefore = text.slice(0, startOffset);
+                const lastNewLine = textBefore.lastIndexOf('\n');
+                lastClickedColumn = startOffset - lastNewLine;
+            }
+
+            // Length = number of characters in the selection (first line only)
+            const firstLine = selectedText.split('\n')[0];
+            lastTokenLength = firstLine.length;
+        } else {
+            // Simple click - auto-detect token
+            const clickInfo = getClickInfo(e);
+            lastClickedColumn = clickInfo.column;
+            lastClickedLineText = clickInfo.lineText;
+            lastTokenLength = getTokenLengthAtPosition(lastClickedColumn, lastClickedLineText);
+        }
+
+        // Show menu at click position
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${e.pageX}px`;
+        contextMenu.style.top = `${e.pageY}px`;
+    }, 10);
+
     e.stopPropagation();
 });
 
-function getColumnIndex(e) {
+// Prevent click from hiding the menu when clicking on output content
+outputContent.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+
+function getClickInfo(e) {
     let range, textNode, offset;
     if (document.caretRangeFromPoint) {
         range = document.caretRangeFromPoint(e.clientX, e.clientY);
@@ -122,15 +185,23 @@ function getColumnIndex(e) {
         textNode = range.offsetNode;
         offset = range.offset;
     } else {
-        return 1;
+        return { column: 1, lineText: '' };
     }
 
-    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return 1;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return { column: 1, lineText: '' };
 
     const text = textNode.textContent;
     const textBefore = text.slice(0, offset);
     const lastNewLine = textBefore.lastIndexOf('\n');
-    return offset - lastNewLine;
+    const column = offset - lastNewLine;
+
+    // Extract the full line text
+    const nextNewLine = text.indexOf('\n', offset);
+    const lineStart = lastNewLine + 1;
+    const lineEnd = nextNewLine === -1 ? text.length : nextNewLine;
+    const lineText = text.slice(lineStart, lineEnd);
+
+    return { column, lineText };
 }
 
 // Close menu on outside click
@@ -142,12 +213,12 @@ document.addEventListener('click', () => {
 contextMenu.querySelectorAll('.menu-item').forEach(item => {
     item.addEventListener('click', (e) => {
         const fieldName = item.textContent;
-        addParameterToPanel(fieldName, lastClickedColumn);
+        addParameterToPanel(fieldName, lastClickedColumn, lastTokenLength);
         contextMenu.style.display = 'none';
     });
 });
 
-function addParameterToPanel(name, index) {
+function addParameterToPanel(name, index, length) {
     // Check if parameter already exists
     const existingRows = parametersList.querySelectorAll('.parameter-row');
     let found = false;
@@ -157,6 +228,10 @@ function addParameterToPanel(name, index) {
         if (nameInput.value === name) {
             const indexInput = row.querySelector('.param-index-input');
             indexInput.value = index;
+            const lengthInput = row.querySelector('.param-length-input');
+            if (lengthInput && length) {
+                lengthInput.value = length;
+            }
             found = true;
 
             // Highlight the update
@@ -174,6 +249,7 @@ function addParameterToPanel(name, index) {
         <div class="drag-handle"><i class="ph ph-dots-six-vertical"></i></div>
         <input type="text" class="param-name-input" value="${name}" readonly>
         <input type="text" class="param-index-input" value="${index}">
+        <input type="text" class="param-length-input" value="${length || ''}">
         <button class="btn-delete-row" title="Sil"><i class="ph ph-trash"></i></button>
     `;
 
@@ -190,7 +266,8 @@ function addParameterToPanel(name, index) {
         // Prepare sync data (Only THIS parameter)
         const name = row.querySelector('.param-name-input').value;
         const index = row.querySelector('.param-index-input').value;
-        const data = { [name]: index };
+        const length = row.querySelector('.param-length-input').value;
+        const data = { [name]: { index, length } };
 
         const jsonData = JSON.stringify(data);
 

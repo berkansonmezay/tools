@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sınav Sonuç Ayrıştırıcı</title>
+    <title>TXT/DAT Parametre Belirleme</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Phosphor Icons -->
@@ -16,8 +16,8 @@
         <!-- Card 1: Header -->
         <div class="card header-card">
             <img src="logo.png" alt="ZA Logo" class="logo">
-            <h1>Sınav Sonuç Ayrıştırıcı</h1>
-            <p>Sonuç dosyalarını yükleyin ve analiz edin.</p>
+            <h1>TXT/DAT Parametre Belirleme</h1>
+            <p>Sonuç dosyalarını yükleyin ve parametreleri tespit edin.</p>
         </div>
 
         <!-- Card 2: Stepper -->
@@ -76,13 +76,18 @@
                             <div class="header-drag-spacer"></div>
                             <div class="header-col-name">Parametre</div>
                             <div class="header-col-index">Başlangıç</div>
-                            <div class="header-delete-spacer"></div>
+                            <div class="header-col-length">Uzunluk</div>
                             <button id="clear-params-btn" class="btn-clear" title="Tümünü Temizle">
                                 <i class="ph ph-trash"></i>
                             </button>
                         </div>
                         <div id="parameters-list" class="parameters-list">
                             <!-- Selected parameters will appear here -->
+                        </div>
+                        <div class="panel-info">
+                            <i class="ph ph-info"></i>
+                            <p>Belirlenen başlangıç parametrelerini sayılarının üzerine basılı tut - sürükle - bırak
+                                yöntemi ile tanımlanan optik parametre alanına kopyalayıp yapıştırabilirsiniz</p>
                         </div>
                     </div>
 
