@@ -150,10 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let length = 0;
             if (orientation === 'D') {
                 length = (endCol - startCol) + 1;
-            } else if (orientation === 'Y') {
-                length = (endRow - startRow) + 1;
             } else {
-                length = 1;
+                // 'Y', 'K' ve diğer tüm kodlar satır tabanlı hesaplanır
+                length = (endRow - startRow) + 1;
             }
 
             // Add to list as card row
